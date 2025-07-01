@@ -4,6 +4,8 @@ const express = require('express');
 const DatabaseService = require('./services/database');
 const GameController = require('./controllers/game');
 const BotController = require('./controllers/bot');
+const BotMonitor = require('./utils/monitor');
+const AutoFix = require('./utils/autofix');
 
 class WordleRoyaleBot {
   constructor() {
@@ -30,7 +32,16 @@ class WordleRoyaleBot {
     
     this.database = new DatabaseService();
     this.gameController = new GameController(this.database);
-    this.botController = new BotController(this.bot, this.gameController);
+    
+    // Initialize monitoring and auto-fix systems first
+    this.monitor = new BotMonitor(this.gameController, null); // Will set botController later
+    this.autoFix = new AutoFix(this.gameController, null);
+    
+    this.botController = new BotController(this.bot, this.gameController, this.monitor);
+    
+    // Update references
+    this.monitor.botController = this.botController;
+    this.autoFix.botController = this.botController;
   }
 
   async start() {
@@ -48,7 +59,11 @@ class WordleRoyaleBot {
       
       this.gameController.startScheduler();
       
+      // Start auto-fix cleanup
+      this.autoFix.startCleanup();
+      
       console.log('🎯 Wordle Royale Bot started successfully!');
+      console.log('🔧 Auto-fix and monitoring systems active');
       console.log('Waiting for games and players...');
     } catch (error) {
       console.error('Failed to start bot:', error);

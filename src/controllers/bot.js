@@ -2,11 +2,12 @@ const Player = require('../models/player');
 const AdminController = require('./admin');
 
 class BotController {
-  constructor(bot, gameController) {
+  constructor(bot, gameController, monitor = null) {
     this.bot = bot;
     this.gameController = gameController;
     this.player = new Player(gameController.db);
-    this.admin = new AdminController(gameController, gameController.db);
+    this.admin = new AdminController(gameController, gameController.db, monitor);
+    this.monitor = monitor;
     
     // Set up broadcasting
     this.gameController.setBroadcastCallback(this.broadcastToAllGroups.bind(this));
@@ -356,7 +357,10 @@ class BotController {
           if (error.message.includes("can't parse entities")) {
             try {
               console.log(`🔄 Retrying without Markdown for chat ${recipient.chat_id}`);
-              await this.bot.sendMessage(recipient.chat_id, message);
+              // Remove all markdown formatting and send plain text
+              const plainMessage = message.replace(/\*/g, '').replace(/_/g, '');
+              await this.bot.sendMessage(recipient.chat_id, plainMessage);
+              console.log(`✅ Plain text message sent successfully to ${recipient.chat_id}`);
             } catch (retryError) {
               console.error(`❌ Retry also failed for chat ${recipient.chat_id}:`, retryError.message);
             }

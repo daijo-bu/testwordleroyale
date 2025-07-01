@@ -57,11 +57,14 @@ class Game {
     const existing = await this.db.get(checkSql, [gameId, playerId]);
     
     if (existing) {
+      console.log(`⚠️  Player ${playerId} already registered for game ${gameId}`);
       return { success: false, message: 'Already registered for this game' };
     }
 
+    console.log(`📝 Adding player ${playerId} to game ${gameId} participants`);
     const sql = `INSERT INTO game_participants (game_id, player_id, chat_id) VALUES (?, ?, ?)`;
     await this.db.run(sql, [gameId, playerId, chatId]);
+    console.log(`✅ Player ${playerId} successfully added to game ${gameId}`);
     
     return { success: true, message: 'Successfully joined the game!' };
   }

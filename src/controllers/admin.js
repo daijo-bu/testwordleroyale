@@ -1,7 +1,8 @@
 class AdminController {
-  constructor(gameController, database) {
+  constructor(gameController, database, monitor = null) {
     this.gameController = gameController;
     this.db = database;
+    this.monitor = monitor;
     this.adminIds = this.parseAdminIds(process.env.ADMIN_TELEGRAM_IDS);
     this.settings = {
       gameStartCron: process.env.GAME_SCHEDULE_CRON || '0 20 * * *',
@@ -42,6 +43,8 @@ class AdminController {
           return await this.getPlayerStats();
         case 'groups':
           return await this.getGroupStatus();
+        case 'health':
+          return await this.getHealthReport();
         default:
           return this.getAdminHelp();
       }
@@ -250,6 +253,7 @@ class AdminController {
         `/admin gamesettings - View current settings\n` +
         `/admin playerstats - View player statistics\n` +
         `/admin groups - View broadcast status\n` +
+        `/admin health - View system health report\n` +
         `/admin help - Show this help\n\n` +
         `*Examples:*\n` +
         `• /admin testgame 3 - Test game, 3min registration\n` +
@@ -293,6 +297,28 @@ class AdminController {
       success: true,
       message
     };
+  }
+
+  async getHealthReport() {
+    if (!this.monitor) {
+      return {
+        success: false,
+        message: 'Health monitoring not available'
+      };
+    }
+
+    try {
+      const report = await this.monitor.getDiagnosticReport();
+      return {
+        success: true,
+        message: report
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error generating health report: ${error.message}`
+      };
+    }
   }
 }
 

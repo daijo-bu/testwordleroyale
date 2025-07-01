@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const Game = require('../models/game');
 const Player = require('../models/player');
 const { getRandomGameWord, isValidWord, getWordFeedback, formatFeedbackForTelegram } = require('../utils/words');
+const { cleanText } = require('../utils/markdown');
 
 class GameController {
   constructor(database) {
@@ -303,9 +304,10 @@ class GameController {
         console.log(`📊 Updated stats - Total: ${stats.total}, Active: ${stats.active}`);
         
         console.log(`📡 Broadcasting join message...`);
+        const safeName = cleanText(firstName || username || 'Player');
         await this.broadcast(
-          `🎮 *${firstName || username} joined the game!*\n` +
-          `👥 *Total players:* ${stats.total}`
+          `🎮 ${safeName} joined the game!\n` +
+          `👥 Total players: ${stats.total}`
         );
         console.log(`✅ Join broadcast completed`);
       }
