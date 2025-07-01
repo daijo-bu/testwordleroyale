@@ -272,30 +272,47 @@ class GameController {
 
   async joinGame(telegramId, username, firstName, chatId) {
     try {
+      console.log(`🎮 Player joining game:`);
+      console.log(`   Telegram ID: ${telegramId}`);
+      console.log(`   Username: ${username || 'N/A'}`);
+      console.log(`   First Name: ${firstName || 'N/A'}`);
+      console.log(`   Chat ID: ${chatId}`);
+      
       const player = await this.player.createOrUpdatePlayer(telegramId, username, firstName, chatId);
+      console.log(`✅ Player created/updated: ID ${player.id}`);
       
       const currentGame = await this.game.getCurrentGame();
       if (!currentGame) {
+        console.log(`❌ No current game found`);
         return { success: false, message: 'No upcoming games. Next game will be announced soon!' };
       }
 
+      console.log(`🎯 Current game found: ID ${currentGame.id}, Status: ${currentGame.status}`);
+
       if (currentGame.status === 'active') {
+        console.log(`❌ Game already active, can't join`);
         return { success: false, message: 'Game already in progress! Wait for the next one.' };
       }
 
+      console.log(`📝 Attempting to join game ${currentGame.id}...`);
       const result = await this.game.joinGame(currentGame.id, player.id, chatId);
+      console.log(`🎲 Join result: ${JSON.stringify(result)}`);
       
       if (result.success) {
         const stats = await this.game.getGameStats(currentGame.id);
+        console.log(`📊 Updated stats - Total: ${stats.total}, Active: ${stats.active}`);
+        
+        console.log(`📡 Broadcasting join message...`);
         await this.broadcast(
           `🎮 *${firstName || username} joined the game!*\n` +
           `👥 *Total players:* ${stats.total}`
         );
+        console.log(`✅ Join broadcast completed`);
       }
 
       return result;
     } catch (error) {
-      console.error('Error joining game:', error);
+      console.error('❌ Error joining game:', error);
       return { success: false, message: 'Error joining game. Please try again.' };
     }
   }

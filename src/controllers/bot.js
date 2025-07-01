@@ -71,6 +71,10 @@ class BotController {
     const user = msg.from;
     
     try {
+      console.log(`📥 Received /join command:`);
+      console.log(`   User: ${user.first_name} (@${user.username})`);
+      console.log(`   Chat ID: ${chatId} (${chatId > 0 ? 'DM' : 'Group'})`);
+      
       const result = await this.gameController.joinGame(
         user.id,
         user.username,
@@ -78,9 +82,11 @@ class BotController {
         chatId
       );
       
+      console.log(`📤 Sending join response to ${chatId}: ${result.success ? 'Success' : 'Failed'}`);
       await this.bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
+      console.log(`✅ Join response sent successfully`);
     } catch (error) {
-      console.error('Error in handleJoin:', error);
+      console.error('❌ Error in handleJoin:', error);
       await this.bot.sendMessage(chatId, 'Error joining game. Please try again.');
     }
   }

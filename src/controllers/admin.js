@@ -54,13 +54,22 @@ class AdminController {
   async startTestGame(args, chatId) {
     const registrationMinutes = args && args[0] ? parseInt(args[0]) : 2;
     
+    console.log(`🧪 Admin starting test game:`);
+    console.log(`   Registration time: ${registrationMinutes} minutes`);
+    console.log(`   Admin chat ID: ${chatId}`);
+    
     if (this.gameController.currentGame && this.gameController.currentGame.status === 'active') {
+      console.log(`❌ Game already active, can't start new one`);
       return { success: false, message: '❌ A game is already active. Use /admin stopgame first.' };
     }
 
     const startTime = new Date();
-    const gameId = await this.gameController.game.createGame(startTime.toISOString());
+    console.log(`📅 Creating test game with start time: ${startTime.toISOString()}`);
     
+    const gameId = await this.gameController.game.createGame(startTime.toISOString());
+    console.log(`✅ Test game created with ID: ${gameId}`);
+    
+    console.log(`📡 Broadcasting test game announcement...`);
     await this.gameController.broadcast(
       `🧪 *TEST GAME STARTING!* 🧪\n\n` +
       `⏰ *Registration closes in ${registrationMinutes} minute(s)*\n` +
@@ -70,8 +79,11 @@ class AdminController {
       `📋 *Type /rules for game rules*\n\n` +
       `🔧 Admin test game - results won't affect official stats`
     );
+    console.log(`✅ Test game announcement broadcast completed`);
 
+    console.log(`⏰ Setting timer for ${registrationMinutes} minutes to start game...`);
     setTimeout(() => {
+      console.log(`🚀 Starting test game ${gameId} now!`);
       this.gameController.startGame(gameId);
     }, registrationMinutes * 60 * 1000);
 
