@@ -65,10 +65,10 @@ class GameController {
     const gameId = await this.game.createGame(startTime.toISOString());
     
     await this.broadcast(
-      `🎯 *WORDLE ROYALE STARTING IN ${this.registrationMinutes} MINUTES!* 🎯\n\n` +
-      `📅 *Start Time:* ${new Date(Date.now() + this.registrationMinutes * 60 * 1000).toLocaleTimeString()}\n` +
-      `💰 *Prize:* $${process.env.PRIZE_AMOUNT || 100}\n` +
-      `⚡ *Format:* Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
+      `🎯 WORDLE ROYALE STARTING IN ${this.registrationMinutes} MINUTES! 🎯\n\n` +
+      `📅 Start Time: ${new Date(Date.now() + this.registrationMinutes * 60 * 1000).toLocaleTimeString()}\n` +
+      `💰 Prize: $${process.env.PRIZE_AMOUNT || 100}\n` +
+      `⚡ Format: Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
       `Type /join to participate!\n` +
       `Type /rules for game rules`
     );
@@ -89,7 +89,7 @@ class GameController {
 
       const participants = await this.game.getGameParticipants(gameId);
       if (participants.length === 0) {
-        await this.broadcast(`😔 **Game Cancelled** - No players joined!`);
+        await this.broadcast(`😔 Game Cancelled - No players joined!`);
         return;
       }
 
@@ -97,11 +97,12 @@ class GameController {
       await this.game.updatePlayerCounts(gameId, participants.length, participants.length);
 
       console.log(`🎮 Starting game ${gameId} with ${participants.length} players`);
+      console.log(`🎯 Current game status: ${this.currentGame.status}`);
       
       await this.startRound(gameId, 1);
     } catch (error) {
       console.error('Error starting game:', error);
-      await this.broadcast(`❌ **Error starting game:** ${error.message}`);
+      await this.broadcast(`❌ Error starting game: ${error.message}`);
     }
   }
 
@@ -115,12 +116,12 @@ class GameController {
       const stats = await this.game.getGameStats(gameId);
       
       await this.broadcast(
-        `🎯 *WORDLE ROYALE - ROUND ${roundNumber}* 🎯\n\n` +
+        `🎯 WORDLE ROYALE - ROUND ${roundNumber} 🎯\n\n` +
         `Word: _ _ _ _ _\n` +
-        `👥 *Players:* ${stats.active} active\n` +
-        `🎯 *Attempts:* ${config.maxAttempts} remaining\n` +
-        `⏰ *Time:* ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
-        `🔤 *Send your 5-letter guess now!*`
+        `👥 Players: ${stats.active} active\n` +
+        `🎯 Attempts: ${config.maxAttempts} remaining\n` +
+        `⏰ Time: ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
+        `🔤 Send your 5-letter guess now!`
       );
 
       this.setRoundTimer(gameId, roundNumber, config.timeLimit);
@@ -205,7 +206,18 @@ class GameController {
 
   async processGuess(telegramId, guess, chatId) {
     try {
-      if (!this.currentGame || this.currentGame.status !== 'active') {
+      console.log(`🎯 Processing guess from ${telegramId}: "${guess}"`);
+      console.log(`🎮 Current game: ${this.currentGame ? `ID ${this.currentGame.id}, Status: ${this.currentGame.status}` : 'None'}`);
+      
+      if (!this.currentGame) {
+        return { success: false, message: 'No active game right now' };
+      }
+      
+      // Refresh current game status from database
+      this.currentGame = await this.game.getGame(this.currentGame.id);
+      console.log(`🔄 Refreshed game status: ${this.currentGame.status}`);
+      
+      if (this.currentGame.status !== 'active') {
         return { success: false, message: 'No active game right now' };
       }
 
@@ -252,15 +264,15 @@ class GameController {
       const isCorrect = feedback.every(f => f === 'correct');
       const attemptsLeft = config.maxAttempts - (currentAttempts + 1);
       
-      let response = `*Your guess:* ${guess.toUpperCase()}\n\n${formattedFeedback}\n\n`;
+      let response = `Your guess: ${guess.toUpperCase()}\n\n${formattedFeedback}\n\n`;
       
       if (isCorrect) {
-        response += `🎉 *Correct!* You've solved this round!\n`;
+        response += `🎉 Correct! You've solved this round!\n`;
         response += `Waiting for other players or round timer...`;
       } else if (attemptsLeft > 0) {
-        response += `*Attempts remaining:* ${attemptsLeft}`;
+        response += `Attempts remaining: ${attemptsLeft}`;
       } else {
-        response += `❌ *No attempts remaining!* You'll be eliminated if you don't solve it.`;
+        response += `❌ No attempts remaining! You'll be eliminated if you don't solve it.`;
       }
 
       return { success: true, message: response };

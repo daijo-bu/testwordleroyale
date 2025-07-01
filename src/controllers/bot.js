@@ -330,8 +330,17 @@ class BotController {
         console.log(`🔍 Broadcasting to ${dmParticipants.length} DM participants`);
       }
       
-      // Combine groups and DM participants
-      const allRecipients = [...activeGroups, ...dmParticipants];
+      // Combine groups and DM participants, removing duplicates
+      const allRecipients = [];
+      const seenChatIds = new Set();
+      
+      [...activeGroups, ...dmParticipants].forEach(recipient => {
+        if (!seenChatIds.has(recipient.chat_id)) {
+          seenChatIds.add(recipient.chat_id);
+          allRecipients.push(recipient);
+        }
+      });
+      
       console.log(`📡 Total broadcast recipients: ${allRecipients.length}`);
       
       if (allRecipients.length === 0) {
