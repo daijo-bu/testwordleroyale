@@ -45,19 +45,19 @@ class BotController {
       await this.player.registerChatGroup(chatId, msg.chat.title);
       
       const welcomeMessage = 
-        `🎯 **Welcome to Wordle Royale!** 🎯\n\n` +
+        `🎯 *Welcome to Wordle Royale!* 🎯\n\n` +
         `The ultimate competitive word-guessing battle royale!\n\n` +
-        `🏆 **How it works:**\n` +
+        `🏆 *How it works:*\n` +
         `• Daily elimination tournaments\n` +
         `• 6 rounds with decreasing attempts (6→5→4→3→2→1)\n` +
         `• Last player standing wins $${process.env.PRIZE_AMOUNT || 100}!\n\n` +
-        `🎮 **Commands:**\n` +
+        `🎮 *Commands:*\n` +
         `/join - Register for next game\n` +
         `/status - Check current game\n` +
         `/rules - Game rules\n` +
         `/stats - Your statistics\n` +
         `/leaderboard - Top players\n\n` +
-        `🚀 **Ready to play?** Use /join for the next game!`;
+        `🚀 *Ready to play?* Use /join for the next game!`;
       
       await this.bot.sendMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
     } catch (error) {
@@ -101,19 +101,19 @@ class BotController {
     const chatId = msg.chat.id;
     
     const rules = 
-      `📋 **WORDLE ROYALE RULES** 📋\n\n` +
-      `🎯 **Objective:** Be the last player standing!\n\n` +
-      `🔄 **Round Structure:**\n` +
+      `📋 *WORDLE ROYALE RULES* 📋\n\n` +
+      `🎯 *Objective:* Be the last player standing!\n\n` +
+      `🔄 *Round Structure:*\n` +
       `• Round 1: 6 attempts, 10 minutes\n` +
       `• Round 2: 5 attempts, 8 minutes\n` +
       `• Round 3: 4 attempts, 7 minutes\n` +
       `• Round 4: 3 attempts, 6 minutes\n` +
       `• Round 5: 2 attempts, 5 minutes\n` +
       `• Final: 1 attempt, 5 minutes\n\n` +
-      `⚡ **Elimination:** Fail to solve = eliminated\n` +
-      `🏆 **Victory:** Last player wins $${process.env.PRIZE_AMOUNT || 100}\n` +
-      `🤝 **Final Round:** If all solve, prize is shared\n\n` +
-      `🎮 **How to Play:**\n` +
+      `⚡ *Elimination:* Fail to solve = eliminated\n` +
+      `🏆 *Victory:* Last player wins $${process.env.PRIZE_AMOUNT || 100}\n` +
+      `🤝 *Final Round:* If all solve, prize is shared\n\n` +
+      `🎮 *How to Play:*\n` +
       `1. Use /join before game starts\n` +
       `2. Send 5-letter words as guesses\n` +
       `3. Get color-coded feedback\n` +
@@ -140,7 +140,7 @@ class BotController {
       if (!stats || stats.total_games === 0) {
         await this.bot.sendMessage(
           chatId, 
-          `📊 **${user.first_name}'s Stats**\n\nNo games played yet! Use /join to start playing.`
+          `📊 *${user.first_name}'s Stats*\n\nNo games played yet! Use /join to start playing.`
         );
         return;
       }
@@ -149,11 +149,11 @@ class BotController {
       const avgRound = stats.avg_elimination_round ? stats.avg_elimination_round.toFixed(1) : 'N/A';
       
       const statsMessage = 
-        `📊 **${user.first_name}'s Stats** 📊\n\n` +
-        `🎮 **Games Played:** ${stats.total_games}\n` +
-        `🏆 **Wins:** ${stats.wins}\n` +
-        `📈 **Win Rate:** ${winRate}%\n` +
-        `🎯 **Avg Round Reached:** ${avgRound}\n\n` +
+        `📊 *${user.first_name}'s Stats* 📊\n\n` +
+        `🎮 *Games Played:* ${stats.total_games}\n` +
+        `🏆 *Wins:* ${stats.wins}\n` +
+        `📈 *Win Rate:* ${winRate}%\n` +
+        `🎯 *Avg Round Reached:* ${avgRound}\n\n` +
         `Use /leaderboard to see top players!`;
       
       await this.bot.sendMessage(chatId, statsMessage, { parse_mode: 'Markdown' });
@@ -170,11 +170,11 @@ class BotController {
       const leaderboard = await this.player.getLeaderboard(10);
       
       if (leaderboard.length === 0) {
-        await this.bot.sendMessage(chatId, '📊 **Leaderboard**\n\nNo games completed yet!');
+        await this.bot.sendMessage(chatId, '📊 *Leaderboard*\n\nNo games completed yet!');
         return;
       }
       
-      let message = '🏆 **WORDLE ROYALE LEADERBOARD** 🏆\n\n';
+      let message = '🏆 *WORDLE ROYALE LEADERBOARD* 🏆\n\n';
       
       leaderboard.forEach((player, index) => {
         const rank = index + 1;
@@ -184,7 +184,7 @@ class BotController {
         
         const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
         
-        message += `${medal} **${name}**\n`;
+        message += `${medal} *${name}*\n`;
         message += `   🏆 ${player.wins} wins | 📈 ${winRate}% | 🎯 ${avgRound} avg\n\n`;
       });
       
@@ -227,12 +227,12 @@ class BotController {
       const isAdmin = this.admin.isAdmin(user.id);
       
       const debugInfo = 
-        `🔧 **DEBUG INFO** 🔧\n\n` +
-        `**Your Telegram ID:** ${user.id}\n` +
-        `**Admin IDs Config:** ${adminIds}\n` +
-        `**Are you admin?** ${isAdmin ? '✅ Yes' : '❌ No'}\n` +
-        `**Node Environment:** ${process.env.NODE_ENV || 'development'}\n` +
-        `**Bot Username:** @${(await this.bot.getMe()).username}\n\n` +
+        `🔧 *DEBUG INFO* 🔧\n\n` +
+        `*Your Telegram ID:* ${user.id}\n` +
+        `*Admin IDs Config:* ${adminIds}\n` +
+        `*Are you admin?* ${isAdmin ? '✅ Yes' : '❌ No'}\n` +
+        `*Node Environment:* ${process.env.NODE_ENV || 'development'}\n` +
+        `*Bot Username:* @${(await this.bot.getMe()).username}\n\n` +
         `If admin access isn't working, check Railway environment variables.`;
       
       await this.bot.sendMessage(chatId, debugInfo, { parse_mode: 'Markdown' });
@@ -280,14 +280,14 @@ class BotController {
         await this.player.registerChatGroup(chatId, msg.chat.title);
         
         const welcomeMessage = 
-          `🎯 **Wordle Royale Bot Added!** 🎯\n\n` +
+          `🎯 *Wordle Royale Bot Added!* 🎯\n\n` +
           `Thanks for adding me to your group!\n\n` +
-          `🎮 **I bring competitive word battles:**\n` +
+          `🎮 *I bring competitive word battles:*\n` +
           `• Daily elimination tournaments\n` +
           `• Real-time multiplayer Wordle\n` +
           `• Cash prizes for winners!\n\n` +
-          `🚀 **Get started:** /join for next game\n` +
-          `📋 **Learn more:** /rules`;
+          `🚀 *Get started:* /join for next game\n` +
+          `📋 *Learn more:* /rules`;
         
         await this.bot.sendMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
       }
@@ -309,9 +309,24 @@ class BotController {
     try {
       const activeGroups = await this.player.getActiveChatGroups();
       
-      for (const group of activeGroups) {
+      // Also get all active game participants for DM updates
+      const currentGame = await this.gameController.game.getCurrentGame();
+      let dmParticipants = [];
+      
+      if (currentGame) {
+        const participants = await this.gameController.game.getGameParticipants(currentGame.id, true);
+        // Get unique DM chat IDs (negative IDs are groups, positive are DMs)
+        dmParticipants = participants
+          .filter(p => p.chat_id > 0) // Positive IDs are DMs
+          .map(p => ({ chat_id: p.chat_id }));
+      }
+      
+      // Combine groups and DM participants
+      const allRecipients = [...activeGroups, ...dmParticipants];
+      
+      for (const recipient of allRecipients) {
         try {
-          await this.bot.sendMessage(group.chat_id, message, { 
+          await this.bot.sendMessage(recipient.chat_id, message, { 
             parse_mode: 'Markdown',
             ...options 
           });
@@ -319,11 +334,16 @@ class BotController {
           // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
-          console.error(`Error broadcasting to group ${group.chat_id}:`, error);
+          console.error(`Error broadcasting to chat ${recipient.chat_id}:`, error);
           
-          // If bot was blocked or removed, deactivate the group
-          if (error.code === 403 || error.code === 400) {
-            await this.player.deactivateChatGroup(group.chat_id);
+          // If bot was blocked or removed from group, deactivate it
+          if ((error.code === 403 || error.code === 400) && recipient.chat_id < 0) {
+            await this.player.deactivateChatGroup(recipient.chat_id);
+          }
+          
+          // For DMs, just log the error (user might have blocked bot)
+          if (recipient.chat_id > 0) {
+            console.log(`User ${recipient.chat_id} may have blocked the bot`);
           }
         }
       }

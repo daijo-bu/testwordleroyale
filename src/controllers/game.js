@@ -64,10 +64,10 @@ class GameController {
     const gameId = await this.game.createGame(startTime.toISOString());
     
     await this.broadcast(
-      `🎯 **WORDLE ROYALE STARTING IN ${this.registrationMinutes} MINUTES!** 🎯\n\n` +
-      `📅 **Start Time:** ${new Date(Date.now() + this.registrationMinutes * 60 * 1000).toLocaleTimeString()}\n` +
-      `💰 **Prize:** $${process.env.PRIZE_AMOUNT || 100}\n` +
-      `⚡ **Format:** Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
+      `🎯 *WORDLE ROYALE STARTING IN ${this.registrationMinutes} MINUTES!* 🎯\n\n` +
+      `📅 *Start Time:* ${new Date(Date.now() + this.registrationMinutes * 60 * 1000).toLocaleTimeString()}\n` +
+      `💰 *Prize:* $${process.env.PRIZE_AMOUNT || 100}\n` +
+      `⚡ *Format:* Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
       `Type /join to participate!\n` +
       `Type /rules for game rules`
     );
@@ -114,12 +114,12 @@ class GameController {
       const stats = await this.game.getGameStats(gameId);
       
       await this.broadcast(
-        `🎯 **WORDLE ROYALE - ROUND ${roundNumber}** 🎯\n\n` +
+        `🎯 *WORDLE ROYALE - ROUND ${roundNumber}* 🎯\n\n` +
         `Word: _ _ _ _ _\n` +
-        `👥 **Players:** ${stats.active} active\n` +
-        `🎯 **Attempts:** ${config.maxAttempts} remaining\n` +
-        `⏰ **Time:** ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
-        `🔤 **Send your 5-letter guess now!**`
+        `👥 *Players:* ${stats.active} active\n` +
+        `🎯 *Attempts:* ${config.maxAttempts} remaining\n` +
+        `⏰ *Time:* ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
+        `🔤 *Send your 5-letter guess now!*`
       );
 
       this.setRoundTimer(gameId, roundNumber, config.timeLimit);
@@ -138,7 +138,7 @@ class GameController {
     setTimeout(async () => {
       const stats = await this.game.getGameStats(gameId);
       await this.broadcast(
-        `⏰ **Time Warning!** 2 minutes remaining!\n` +
+        `⏰ *Time Warning!* 2 minutes remaining!\n` +
         `Round ${roundNumber} - ${stats.active} players still active`
       );
     }, timeLimit - 2 * 60 * 1000); // 2 minutes before end
@@ -177,14 +177,14 @@ class GameController {
       const remainingPlayers = await this.game.getGameParticipants(gameId, true);
 
       await this.broadcast(
-        `⚡ **ROUND ${roundNumber} COMPLETE** ⚡\n\n` +
-        `📊 **${newStats.total} started → ${newStats.active} survived**\n` +
-        `❌ **${playersToEliminate.length} players eliminated**\n\n` +
+        `⚡ *ROUND ${roundNumber} COMPLETE* ⚡\n\n` +
+        `📊 *${newStats.total} started → ${newStats.active} survived*\n` +
+        `❌ *${playersToEliminate.length} players eliminated*\n\n` +
         `${newStats.active > 1 ? 'Next round starting in 30 seconds...' : ''}`
       );
 
       if (newStats.active === 0) {
-        await this.broadcast(`😔 **No winners this round!** Better luck next time!`);
+        await this.broadcast(`😔 *No winners this round!* Better luck next time!`);
         await this.game.updateGameStatus(gameId, 'completed');
       } else if (newStats.active === 1) {
         const winner = remainingPlayers[0];
@@ -251,15 +251,15 @@ class GameController {
       const isCorrect = feedback.every(f => f === 'correct');
       const attemptsLeft = config.maxAttempts - (currentAttempts + 1);
       
-      let response = `**Your guess:** ${guess.toUpperCase()}\n\n${formattedFeedback}\n\n`;
+      let response = `*Your guess:* ${guess.toUpperCase()}\n\n${formattedFeedback}\n\n`;
       
       if (isCorrect) {
-        response += `🎉 **Correct!** You've solved this round!\n`;
+        response += `🎉 *Correct!* You've solved this round!\n`;
         response += `Waiting for other players or round timer...`;
       } else if (attemptsLeft > 0) {
-        response += `**Attempts remaining:** ${attemptsLeft}`;
+        response += `*Attempts remaining:* ${attemptsLeft}`;
       } else {
-        response += `❌ **No attempts remaining!** You'll be eliminated if you don't solve it.`;
+        response += `❌ *No attempts remaining!* You'll be eliminated if you don't solve it.`;
       }
 
       return { success: true, message: response };
@@ -288,8 +288,8 @@ class GameController {
       if (result.success) {
         const stats = await this.game.getGameStats(currentGame.id);
         await this.broadcast(
-          `🎮 **${firstName || username} joined the game!**\n` +
-          `👥 **Total players:** ${stats.total}`
+          `🎮 *${firstName || username} joined the game!*\n` +
+          `👥 *Total players:* ${stats.total}`
         );
       }
 
@@ -307,12 +307,12 @@ class GameController {
     const stats = await this.game.getGameStats(gameId);
     
     await this.broadcast(
-      `🏆 **WORDLE ROYALE CHAMPION!** 🏆\n\n` +
-      `🎉 **Winner:** ${winner.first_name || winner.username}\n` +
-      `💰 **Prize:** $${process.env.PRIZE_AMOUNT || 100}\n\n` +
-      `📊 **Final word:** ${this.currentGame.current_word}\n` +
-      `👥 **Total players eliminated:** ${stats.eliminated}\n\n` +
-      `🎯 **Next game:** Check announcements!`
+      `🏆 *WORDLE ROYALE CHAMPION!* 🏆\n\n` +
+      `🎉 *Winner:* ${winner.first_name || winner.username}\n` +
+      `💰 *Prize:* $${process.env.PRIZE_AMOUNT || 100}\n\n` +
+      `📊 *Final word:* ${this.currentGame.current_word}\n` +
+      `👥 *Total players eliminated:* ${stats.eliminated}\n\n` +
+      `🎯 *Next game:* Check announcements!`
     );
 
     this.currentGame = null;
@@ -328,12 +328,12 @@ class GameController {
     await this.game.updateGameStatus(gameId, 'completed');
     
     await this.broadcast(
-      `🏆 **WORDLE ROYALE CHAMPIONS!** 🏆\n\n` +
-      `🎉 **Winners:** ${winnerNames}\n` +
-      `💰 **Prize:** $${process.env.PRIZE_AMOUNT || 100} (shared)\n\n` +
-      `📊 **Final word:** ${this.currentGame.current_word}\n` +
-      `🔥 **All ${winners.length} survivors solved the final puzzle!**\n\n` +
-      `🎯 **Next game:** Check announcements!`
+      `🏆 *WORDLE ROYALE CHAMPIONS!* 🏆\n\n` +
+      `🎉 *Winners:* ${winnerNames}\n` +
+      `💰 *Prize:* $${process.env.PRIZE_AMOUNT || 100} (shared)\n\n` +
+      `📊 *Final word:* ${this.currentGame.current_word}\n` +
+      `🔥 *All ${winners.length} survivors solved the final puzzle!*\n\n` +
+      `🎯 *Next game:* Check announcements!`
     );
 
     this.currentGame = null;
@@ -348,12 +348,12 @@ class GameController {
     const config = this.game.getRoundConfig(this.currentGame.current_round);
     
     return (
-      `🎯 **Current Game Status**\n\n` +
-      `📊 **Round:** ${this.currentGame.current_round}/6\n` +
-      `👥 **Active Players:** ${stats.active}\n` +
-      `❌ **Eliminated:** ${stats.eliminated}\n` +
-      `🎯 **Max Attempts:** ${config.maxAttempts}\n` +
-      `⏰ **Time Limit:** ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
+      `🎯 *Current Game Status*\n\n` +
+      `📊 *Round:* ${this.currentGame.current_round}/6\n` +
+      `👥 *Active Players:* ${stats.active}\n` +
+      `❌ *Eliminated:* ${stats.eliminated}\n` +
+      `🎯 *Max Attempts:* ${config.maxAttempts}\n` +
+      `⏰ *Time Limit:* ${Math.floor(config.timeLimit / 1000 / 60)} minutes\n\n` +
       `Type your 5-letter guess to play!`
     );
   }

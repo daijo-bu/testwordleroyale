@@ -60,13 +60,13 @@ class AdminController {
     const gameId = await this.gameController.game.createGame(startTime.toISOString());
     
     await this.gameController.broadcast(
-      `🧪 **TEST GAME STARTING!** 🧪\n\n` +
-      `⏰ **Registration closes in ${registrationMinutes} minute(s)**\n` +
-      `💰 **Prize:** $${this.settings.prizeAmount}\n` +
-      `⚡ **Format:** Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
-      `🎮 **Type /join to participate!**\n` +
-      `📋 **Type /rules for game rules**\n\n` +
-      `🔧 *Admin test game - results won't affect official stats*`
+      `🧪 *TEST GAME STARTING!* 🧪\n\n` +
+      `⏰ *Registration closes in ${registrationMinutes} minute(s)*\n` +
+      `💰 *Prize:* $${this.settings.prizeAmount}\n` +
+      `⚡ *Format:* Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
+      `🎮 *Type /join to participate!*\n` +
+      `📋 *Type /rules for game rules*\n\n` +
+      `🔧 Admin test game - results won't affect official stats`
     );
 
     setTimeout(() => {
@@ -163,11 +163,11 @@ class AdminController {
 
     return {
       success: true,
-      message: `⚙️ **GAME SETTINGS** ⚙️\n\n` +
-        `🕒 **Daily Start Time:** ${timeString}\n` +
-        `📝 **Registration Period:** ${this.settings.registrationMinutes} minutes\n` +
-        `💰 **Prize Amount:** $${this.settings.prizeAmount}\n` +
-        `🎮 **Current Game:** ${gameStatus}\n\n` +
+      message: `⚙️ *GAME SETTINGS* ⚙️\n\n` +
+        `🕒 *Daily Start Time:* ${timeString}\n` +
+        `📝 *Registration Period:* ${this.settings.registrationMinutes} minutes\n` +
+        `💰 *Prize Amount:* $${this.settings.prizeAmount}\n` +
+        `🎮 *Current Game:* ${gameStatus}\n\n` +
         `Use /admin help for configuration commands`
     };
   }
@@ -189,7 +189,7 @@ class AdminController {
     this.gameController.currentGame = null;
 
     await this.gameController.broadcast(
-      `🛑 **GAME CANCELLED** 🛑\n\n` +
+      `🛑 *GAME CANCELLED* 🛑\n\n` +
       `The current game has been stopped by an admin.\n` +
       `Next scheduled game will be announced as usual.`
     );
@@ -212,11 +212,11 @@ class AdminController {
 
     return {
       success: true,
-      message: `📊 **PLAYER STATISTICS** 📊\n\n` +
-        `👥 **Total Players:** ${totalPlayers.count}\n` +
-        `🆕 **New This Week:** ${recentPlayers.count}\n` +
-        `🎮 **Games Completed:** ${totalGames.count}\n` +
-        `🟢 **Active Games:** ${activeGames.count}\n\n` +
+      message: `📊 *PLAYER STATISTICS* 📊\n\n` +
+        `👥 *Total Players:* ${totalPlayers.count}\n` +
+        `🆕 *New This Week:* ${recentPlayers.count}\n` +
+        `🎮 *Games Completed:* ${totalGames.count}\n` +
+        `🟢 *Active Games:* ${activeGames.count}\n\n` +
         `Use /leaderboard to see top players`
     };
   }
@@ -224,19 +224,19 @@ class AdminController {
   getAdminHelp() {
     return {
       success: true,
-      message: `🔧 **ADMIN COMMANDS** 🔧\n\n` +
-        `**Game Control:**\n` +
+      message: `🔧 *ADMIN COMMANDS* 🔧\n\n` +
+        `*Game Control:*\n` +
         `/admin testgame [minutes] - Start test game\n` +
         `/admin stopgame - Stop current game\n\n` +
-        `**Configuration:**\n` +
+        `*Configuration:*\n` +
         `/admin settime <hour> [minute] - Set daily start time\n` +
         `/admin setregistration <minutes> - Set registration period\n` +
         `/admin setprize <amount> - Set prize amount\n\n` +
-        `**Information:**\n` +
+        `*Information:*\n` +
         `/admin gamesettings - View current settings\n` +
         `/admin playerstats - View player statistics\n` +
         `/admin help - Show this help\n\n` +
-        `**Examples:**\n` +
+        `*Examples:*\n` +
         `• /admin testgame 3 - Test game, 3min registration\n` +
         `• /admin settime 21 30 - Games at 9:30 PM UTC\n` +
         `• /admin setregistration 45 - 45min registration`
