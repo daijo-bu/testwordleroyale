@@ -4,9 +4,10 @@
   "description": "Telegram bot for Wordle Royale - competitive elimination word game",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node scripts/reset-bot.js && node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest"
+    "test": "jest",
+    "reset-bot": "node scripts/reset-bot.js"
   },
   "keywords": ["telegram", "bot", "wordle", "game"],
   "author": "WordleRoyale",

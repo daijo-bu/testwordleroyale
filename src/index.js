@@ -33,10 +33,15 @@ class WordleRoyaleBot {
       this.bot.on('polling_error', (error) => {
         console.error('Polling error:', error.message);
         if (error.message.includes('409 Conflict')) {
-          console.log('🔄 Another bot instance detected. Stopping this instance.');
-          process.exit(1);
+          console.log('🔄 Another bot instance detected. Restarting in 10 seconds...');
+          setTimeout(() => process.exit(1), 10000);
+          return;
         }
       });
+      
+      // Small delay to ensure clean start
+      console.log('⏳ Starting bot in 3 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
       // Start polling
       await this.bot.startPolling();
@@ -46,7 +51,12 @@ class WordleRoyaleBot {
       console.log('Waiting for games and players...');
     } catch (error) {
       console.error('Failed to start bot:', error);
-      process.exit(1);
+      if (error.message.includes('409 Conflict')) {
+        console.log('🔄 Conflict detected during startup. Restarting...');
+        setTimeout(() => process.exit(1), 5000);
+      } else {
+        process.exit(1);
+      }
     }
   }
 }
