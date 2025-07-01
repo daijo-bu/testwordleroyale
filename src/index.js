@@ -11,7 +11,14 @@ class WordleRoyaleBot {
       throw new Error('TELEGRAM_BOT_TOKEN is required');
     }
     
-    this.bot = new TelegramBot(this.token, { polling: true });
+    // Add polling error handling
+    this.bot = new TelegramBot(this.token, { 
+      polling: {
+        interval: 1000,
+        autoStart: false
+      }
+    });
+    
     this.database = new DatabaseService();
     this.gameController = new GameController(this.database);
     this.botController = new BotController(this.bot, this.gameController);
@@ -21,6 +28,18 @@ class WordleRoyaleBot {
     try {
       await this.database.initialize();
       this.botController.setupCommands();
+      
+      // Handle polling errors
+      this.bot.on('polling_error', (error) => {
+        console.error('Polling error:', error.message);
+        if (error.message.includes('409 Conflict')) {
+          console.log('🔄 Another bot instance detected. Stopping this instance.');
+          process.exit(1);
+        }
+      });
+      
+      // Start polling
+      await this.bot.startPolling();
       this.gameController.startScheduler();
       
       console.log('🎯 Wordle Royale Bot started successfully!');
