@@ -1,10 +1,12 @@
 const Player = require('../models/player');
+const AdminController = require('./admin');
 
 class BotController {
   constructor(bot, gameController) {
     this.bot = bot;
     this.gameController = gameController;
     this.player = new Player(gameController.db);
+    this.admin = new AdminController(gameController, gameController.db);
     
     // Set up broadcasting
     this.gameController.setBroadcastCallback(this.broadcastToAllGroups.bind(this));
@@ -18,6 +20,9 @@ class BotController {
     this.bot.onText(/\/rules/, this.handleRules.bind(this));
     this.bot.onText(/\/stats/, this.handleStats.bind(this));
     this.bot.onText(/\/leaderboard/, this.handleLeaderboard.bind(this));
+    
+    // Admin commands
+    this.bot.onText(/\/admin (.+)/, this.handleAdmin.bind(this));
     
     // Handle 5-letter word guesses
     this.bot.on('message', this.handleMessage.bind(this));
@@ -184,6 +189,29 @@ class BotController {
     } catch (error) {
       console.error('Error in handleLeaderboard:', error);
       await this.bot.sendMessage(chatId, 'Error getting leaderboard.');
+    }
+  }
+
+  async handleAdmin(msg, match) {
+    const chatId = msg.chat.id;
+    const user = msg.from;
+    const commandText = match[1];
+    const args = commandText.split(' ');
+    const command = args[0].toLowerCase();
+    const commandArgs = args.slice(1);
+
+    try {
+      const result = await this.admin.handleAdminCommand(
+        user.id,
+        command,
+        commandArgs,
+        chatId
+      );
+      
+      await this.bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
+    } catch (error) {
+      console.error('Error in handleAdmin:', error);
+      await this.bot.sendMessage(chatId, '❌ Error processing admin command.');
     }
   }
 

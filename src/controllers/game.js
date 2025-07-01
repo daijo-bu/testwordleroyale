@@ -11,6 +11,8 @@ class GameController {
     this.currentGame = null;
     this.gameTimers = new Map();
     this.broadcastCallback = null;
+    this.cronJob = null;
+    this.registrationMinutes = parseInt(process.env.REGISTRATION_MINUTES) || 30;
   }
 
   setBroadcastCallback(callback) {
@@ -26,7 +28,7 @@ class GameController {
   startScheduler() {
     const schedule = process.env.GAME_SCHEDULE_CRON || '0 20 * * *'; // 8 PM daily
     
-    cron.schedule(schedule, async () => {
+    this.cronJob = cron.schedule(schedule, async () => {
       try {
         await this.scheduleNewGame();
       } catch (error) {
@@ -37,13 +39,33 @@ class GameController {
     console.log(`🕒 Game scheduler started with cron: ${schedule}`);
   }
 
+  restartScheduler(newSchedule) {
+    if (this.cronJob) {
+      this.cronJob.destroy();
+    }
+    
+    this.cronJob = cron.schedule(newSchedule, async () => {
+      try {
+        await this.scheduleNewGame();
+      } catch (error) {
+        console.error('Error scheduling game:', error);
+      }
+    });
+
+    console.log(`🕒 Game scheduler restarted with cron: ${newSchedule}`);
+  }
+
+  setRegistrationTime(minutes) {
+    this.registrationMinutes = minutes;
+  }
+
   async scheduleNewGame() {
     const startTime = new Date();
     const gameId = await this.game.createGame(startTime.toISOString());
     
     await this.broadcast(
-      `🎯 **WORDLE ROYALE STARTING IN 30 MINUTES!** 🎯\n\n` +
-      `📅 **Start Time:** ${startTime.toLocaleTimeString()}\n` +
+      `🎯 **WORDLE ROYALE STARTING IN ${this.registrationMinutes} MINUTES!** 🎯\n\n` +
+      `📅 **Start Time:** ${new Date(Date.now() + this.registrationMinutes * 60 * 1000).toLocaleTimeString()}\n` +
       `💰 **Prize:** $${process.env.PRIZE_AMOUNT || 100}\n` +
       `⚡ **Format:** Elimination rounds (6→5→4→3→2→1 attempts)\n\n` +
       `Type /join to participate!\n` +
@@ -52,7 +74,7 @@ class GameController {
 
     setTimeout(() => {
       this.startGame(gameId);
-    }, 30 * 60 * 1000); // 30 minutes
+    }, this.registrationMinutes * 60 * 1000);
 
     return gameId;
   }

@@ -22,10 +22,22 @@ A competitive, elimination-style Wordle game for Telegram that can run across mu
 
 ## Commands
 
+### Player Commands
 - `/join` - Register for the next game
 - `/status` - Check current game status and your progress
 - `/rules` - Display game rules
 - `/stats` - View your statistics and leaderboard
+- `/leaderboard` - View top players
+
+### Admin Commands
+- `/admin testgame [minutes]` - Start a test game with custom registration time
+- `/admin settime <hour> [minute]` - Set daily game start time (UTC)
+- `/admin setregistration <minutes>` - Set registration period duration
+- `/admin setprize <amount>` - Set prize amount displayed
+- `/admin gamesettings` - View current game configuration
+- `/admin stopgame` - Stop current active game
+- `/admin playerstats` - View player statistics
+- `/admin help` - Show admin command help
 
 ## Setup
 
@@ -66,7 +78,9 @@ A competitive, elimination-style Wordle game for Telegram that can run across mu
 - `TELEGRAM_BOT_TOKEN` - Your Telegram bot token (required)
 - `DATABASE_PATH` - SQLite database file path (default: ./data/wordle_royale.db)
 - `GAME_SCHEDULE_CRON` - Cron schedule for games (default: 0 20 * * * - 8 PM daily)
+- `REGISTRATION_MINUTES` - Registration period in minutes (default: 30)
 - `PRIZE_AMOUNT` - Prize amount to display (default: 100)
+- `ADMIN_TELEGRAM_IDS` - Comma-separated list of admin Telegram user IDs
 - `DEBUG` - Enable debug logging (default: false)
 
 ## Bot Setup
