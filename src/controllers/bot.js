@@ -24,6 +24,9 @@ class BotController {
     // Admin commands
     this.bot.onText(/\/admin (.+)/, this.handleAdmin.bind(this));
     
+    // Debug command (works for everyone)
+    this.bot.onText(/\/debug/, this.handleDebug.bind(this));
+    
     // Handle 5-letter word guesses
     this.bot.on('message', this.handleMessage.bind(this));
     
@@ -212,6 +215,30 @@ class BotController {
     } catch (error) {
       console.error('Error in handleAdmin:', error);
       await this.bot.sendMessage(chatId, '❌ Error processing admin command.');
+    }
+  }
+
+  async handleDebug(msg) {
+    const chatId = msg.chat.id;
+    const user = msg.from;
+    
+    try {
+      const adminIds = process.env.ADMIN_TELEGRAM_IDS || 'Not set';
+      const isAdmin = this.admin.isAdmin(user.id);
+      
+      const debugInfo = 
+        `🔧 **DEBUG INFO** 🔧\n\n` +
+        `**Your Telegram ID:** ${user.id}\n` +
+        `**Admin IDs Config:** ${adminIds}\n` +
+        `**Are you admin?** ${isAdmin ? '✅ Yes' : '❌ No'}\n` +
+        `**Node Environment:** ${process.env.NODE_ENV || 'development'}\n` +
+        `**Bot Username:** @${(await this.bot.getMe()).username}\n\n` +
+        `If admin access isn't working, check Railway environment variables.`;
+      
+      await this.bot.sendMessage(chatId, debugInfo, { parse_mode: 'Markdown' });
+    } catch (error) {
+      console.error('Error in handleDebug:', error);
+      await this.bot.sendMessage(chatId, '❌ Debug command failed.');
     }
   }
 
