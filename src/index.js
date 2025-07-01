@@ -12,8 +12,8 @@ class WordleRoyaleBot {
       throw new Error('TELEGRAM_BOT_TOKEN is required');
     }
     
-    // Use webhooks in production, polling in development
-    const useWebhook = process.env.NODE_ENV === 'production';
+    // Force polling for now (webhooks need Railway domain setup)
+    const useWebhook = false;
     
     if (useWebhook) {
       this.bot = new TelegramBot(this.token, { polling: false });
@@ -57,20 +57,39 @@ class WordleRoyaleBot {
   }
 
   async setupWebhook() {
-    const webhookUrl = `${process.env.RAILWAY_STATIC_URL || 'https://your-app.railway.app'}/webhook`;
+    // Railway provides the public URL via these environment variables
+    const publicUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
+      || process.env.RAILWAY_STATIC_URL 
+      || process.env.PUBLIC_URL;
+    
+    if (!publicUrl) {
+      console.log('⚠️  No public URL found, falling back to polling...');
+      return this.setupPolling();
+    }
+    
+    const webhookUrl = `https://${publicUrl}/webhook`;
     
     // Set up Express server
     this.app.use(express.json());
     
     // Health check endpoint
     this.app.get('/', (req, res) => {
-      res.json({ status: 'Wordle Royale Bot is running!' });
+      res.json({ 
+        status: 'Wordle Royale Bot is running!',
+        webhook: webhookUrl,
+        timestamp: new Date().toISOString()
+      });
     });
     
     // Webhook endpoint
     this.app.post('/webhook', (req, res) => {
-      this.bot.processUpdate(req.body);
-      res.sendStatus(200);
+      try {
+        this.bot.processUpdate(req.body);
+        res.sendStatus(200);
+      } catch (error) {
+        console.error('Webhook processing error:', error);
+        res.sendStatus(500);
+      }
     });
     
     // Start server
@@ -82,30 +101,52 @@ class WordleRoyaleBot {
     try {
       await this.bot.setWebHook(webhookUrl);
       console.log(`📡 Webhook set to: ${webhookUrl}`);
+      
+      // Verify webhook was set
+      const webhookInfo = await this.bot.getWebHookInfo();
+      console.log(`✅ Webhook verified: ${webhookInfo.url}`);
     } catch (error) {
       console.error('Webhook setup failed:', error.message);
-      throw error;
+      console.log('🔄 Falling back to polling...');
+      return this.setupPolling();
     }
   }
 
   async setupPolling() {
-    // Handle polling errors
+    // Handle polling errors more gracefully
     this.bot.on('polling_error', (error) => {
       console.error('Polling error:', error.message);
+      
       if (error.message.includes('409 Conflict')) {
-        console.log('🔄 Another bot instance detected. Restarting...');
-        setTimeout(() => process.exit(1), 5000);
+        console.log('🔄 Conflict detected - waiting 30 seconds before restart...');
+        setTimeout(() => {
+          console.log('🔄 Restarting due to conflict...');
+          process.exit(1);
+        }, 30000);
         return;
       }
+      
+      // Log other errors but don't restart
+      console.log('⚠️  Non-fatal polling error, continuing...');
     });
     
-    // Small delay to ensure clean start
-    console.log('⏳ Starting polling in 3 seconds...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Longer delay to ensure conflicts are resolved
+    console.log('⏳ Starting polling in 10 seconds...');
+    await new Promise(resolve => setTimeout(resolve, 10000));
     
-    // Start polling
-    await this.bot.startPolling();
-    console.log('📡 Polling started');
+    try {
+      // Start polling with retry
+      await this.bot.startPolling({ restart: true });
+      console.log('📡 Polling started successfully');
+    } catch (error) {
+      console.error('Failed to start polling:', error.message);
+      if (error.message.includes('409')) {
+        console.log('🔄 Immediate conflict - restarting in 60 seconds...');
+        setTimeout(() => process.exit(1), 60000);
+      } else {
+        throw error;
+      }
+    }
   }
 }
 
