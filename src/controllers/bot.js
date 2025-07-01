@@ -308,6 +308,7 @@ class BotController {
   async broadcastToAllGroups(message, options = {}) {
     try {
       const activeGroups = await this.player.getActiveChatGroups();
+      console.log(`🔍 Broadcasting to ${activeGroups.length} active groups`);
       
       // Also get all active game participants for DM updates
       const currentGame = await this.gameController.game.getCurrentGame();
@@ -319,13 +320,22 @@ class BotController {
         dmParticipants = participants
           .filter(p => p.chat_id > 0) // Positive IDs are DMs
           .map(p => ({ chat_id: p.chat_id }));
+        console.log(`🔍 Broadcasting to ${dmParticipants.length} DM participants`);
       }
       
       // Combine groups and DM participants
       const allRecipients = [...activeGroups, ...dmParticipants];
+      console.log(`📡 Total broadcast recipients: ${allRecipients.length}`);
+      
+      if (allRecipients.length === 0) {
+        console.log('⚠️  No recipients found for broadcast!');
+        console.log('Add the bot to Telegram groups or join via DM to receive messages.');
+        return;
+      }
       
       for (const recipient of allRecipients) {
         try {
+          console.log(`📤 Sending to chat: ${recipient.chat_id}`);
           await this.bot.sendMessage(recipient.chat_id, message, { 
             parse_mode: 'Markdown',
             ...options 
@@ -334,7 +344,17 @@ class BotController {
           // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
-          console.error(`Error broadcasting to chat ${recipient.chat_id}:`, error);
+          console.error(`❌ Error broadcasting to chat ${recipient.chat_id}:`, error.message);
+          
+          // Try sending without Markdown if parsing fails
+          if (error.message.includes("can't parse entities")) {
+            try {
+              console.log(`🔄 Retrying without Markdown for chat ${recipient.chat_id}`);
+              await this.bot.sendMessage(recipient.chat_id, message);
+            } catch (retryError) {
+              console.error(`❌ Retry also failed for chat ${recipient.chat_id}:`, retryError.message);
+            }
+          }
           
           // If bot was blocked or removed from group, deactivate it
           if ((error.code === 403 || error.code === 400) && recipient.chat_id < 0) {

@@ -40,6 +40,8 @@ class AdminController {
           return await this.stopCurrentGame();
         case 'playerstats':
           return await this.getPlayerStats();
+        case 'groups':
+          return await this.getGroupStatus();
         default:
           return this.getAdminHelp();
       }
@@ -235,11 +237,49 @@ class AdminController {
         `*Information:*\n` +
         `/admin gamesettings - View current settings\n` +
         `/admin playerstats - View player statistics\n` +
+        `/admin groups - View broadcast status\n` +
         `/admin help - Show this help\n\n` +
         `*Examples:*\n` +
         `• /admin testgame 3 - Test game, 3min registration\n` +
         `• /admin settime 21 30 - Games at 9:30 PM UTC\n` +
         `• /admin setregistration 45 - 45min registration`
+    };
+  }
+
+  async getGroupStatus() {
+    const activeGroupsSql = `SELECT * FROM chat_groups WHERE is_active = 1`;
+    const activeGroups = await this.db.all(activeGroupsSql);
+    
+    const currentGame = await this.gameController.game.getCurrentGame();
+    let dmParticipants = [];
+    
+    if (currentGame) {
+      const participants = await this.gameController.game.getGameParticipants(currentGame.id, true);
+      dmParticipants = participants.filter(p => p.chat_id > 0);
+    }
+    
+    let message = `📊 *BROADCAST STATUS* 📊\n\n`;
+    message += `*Active Groups:* ${activeGroups.length}\n`;
+    message += `*DM Participants:* ${dmParticipants.length}\n`;
+    message += `*Total Recipients:* ${activeGroups.length + dmParticipants.length}\n\n`;
+    
+    if (activeGroups.length > 0) {
+      message += `*Groups:*\n`;
+      activeGroups.forEach(group => {
+        const title = group.chat_title || 'Unknown';
+        message += `• ${title} (${group.chat_id})\n`;
+      });
+    } else {
+      message += `⚠️ *No active groups!*\nAdd bot to Telegram groups to enable broadcasting.\n`;
+    }
+    
+    if (dmParticipants.length > 0) {
+      message += `\n*DM Participants:* ${dmParticipants.length} players\n`;
+    }
+    
+    return {
+      success: true,
+      message
     };
   }
 }
