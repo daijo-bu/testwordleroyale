@@ -4,22 +4,28 @@
   "description": "Telegram bot for Wordle Royale - competitive elimination word game",
   "main": "src/index.js",
   "scripts": {
-    "start": "node scripts/reset-bot.js && node src/index.js",
+    "start": "node scripts/force-reset.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "jest",
-    "reset-bot": "node scripts/reset-bot.js"
+    "reset-bot": "node scripts/force-reset.js"
   },
-  "keywords": ["telegram", "bot", "wordle", "game"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "wordle",
+    "game"
+  ],
   "author": "WordleRoyale",
   "license": "MIT",
   "dependencies": {
-    "node-telegram-bot-api": "^0.64.0",
-    "sqlite3": "^5.1.6",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.2",
     "node-cron": "^3.0.3",
-    "dotenv": "^16.3.1"
+    "node-telegram-bot-api": "^0.64.0",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2"
   }
 }
